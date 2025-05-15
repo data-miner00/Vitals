@@ -31,17 +31,26 @@ otel.ConfigureResource(resource => resource
     .AddService(serviceName: builder.Environment.ApplicationName));
 
 // Add Metrics for ASP.NET Core and our custom metrics and export to Prometheus
-otel.WithMetrics(metrics => metrics
-    // Metrics provider from OpenTelemetry
-    .AddAspNetCoreInstrumentation()
-    .AddMeter(greeterMeter.Name)
-    // Metrics provides by ASP.NET Core in .NET 8
-    .AddMeter("Microsoft.AspNetCore.Hosting")
-    .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
-    // Metrics provided by System.Net libraries
-    .AddMeter("System.Net.Http")
-    .AddMeter("System.Net.NameResolution")
-    .AddPrometheusExporter());
+otel.WithMetrics(metrics =>
+{
+    metrics
+        // Metrics provider from OpenTelemetry
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddProcessInstrumentation()
+        .AddMeter(greeterMeter.Name)
+        // Metrics provides by ASP.NET Core in .NET 8
+        .AddMeter("Microsoft.AspNetCore.Hosting")
+        .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+        // Metrics provided by System.Net libraries
+        .AddMeter("System.Net.Http")
+        .AddMeter("System.Net.NameResolution")
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(tracingOtlpEndpoint);
+        })
+        .AddPrometheusExporter();
+});
 
 var activitySource = new ActivitySource("Vitals.WebApi");
 builder.Services.AddSingleton(activitySource);

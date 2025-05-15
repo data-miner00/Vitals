@@ -19,6 +19,10 @@ services:
     restart: unless-stopped
     networks:
       - monitoring
+    environment:
+      OTLP_ENDPOINT_URL: 'http://otel-collector:4317'
+    depends_on:
+      - otel-collector
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -36,10 +40,34 @@ services:
     image: grafana/grafana-oss:latest
     container_name: grafana
     ports:
-      - '3000:3000'
+      - 3000:3000
     volumes:
       - grafana-data:/var/lib/grafana
     restart: unless-stopped
+    networks:
+      - monitoring
+  otel-collector:
+    image: otel/opentelemetry-collector:0.95.0
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - 8888:8888
+      - 8889:8889
+      - 13133:13133
+      - 4317:4317
+    networks:
+      - monitoring
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.5.0
+    container_name: node-exporter
+    command: '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
     networks:
       - monitoring
 
