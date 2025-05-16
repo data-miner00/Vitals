@@ -1,79 +1,98 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿namespace Vitals.WebApi.Controllers;
+
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Vitals.WebApi.Models;
+using Vitals.WebApi.Repositories;
 
-namespace Vitals.WebApi.Controllers
+[ApiController]
+[Route("api/[controller]")]
+[Area("users")]
+public sealed class UserController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [Area("users")]
-    public class UserController : ControllerBase
+    private readonly Counter<int> counter;
+    private readonly ActivitySource source;
+    private readonly UserRepository repository;
+
+    public UserController(UserRepository repository, Meter greeterMeter, ActivitySource source)
     {
-        private readonly Counter<int> counter;
-        private readonly ActivitySource source;
-        private readonly UserRepository repository;
+        this.repository = repository;
+        this.counter = greeterMeter.CreateCounter<int>("Counter");
+        this.source = source;
+    }
 
-        public UserController(UserRepository repository, Meter greeterMeter, ActivitySource source)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById(int id)
+    {
+        using var activity = this.source.StartActivity("GetById", ActivityKind.Server);
+        try
         {
-            this.repository = repository;
-            this.counter = greeterMeter.CreateCounter<int>("Counter");
-            this.source = source;
+            this.counter.Add(1);
+            return Ok(this.repository.Get(id));
         }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        finally
+        {
+            activity?.SetTag("id", id);
+            activity?.SetTag("controller", nameof(UserController));
+            activity?.SetTag("action", nameof(GetById));
+            activity?.SetTag("area", "users");
+        }
+    }
 
-        [HttpGet("{id:int}")]
-        public IActionResult GetById(int id)
-        {
-            using var activity = this.source.StartActivity("GetById", ActivityKind.Server);
-            try
-            {
-                this.counter.Add(1);
-                return Ok(this.repository.Get(id));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            finally
-            {
-                activity?.SetTag("id", id);
-                activity?.SetTag("controller", nameof(UserController));
-                activity?.SetTag("action", nameof(GetById));
-                activity?.SetTag("area", "users");
-            }
-        }
+    [HttpGet]
+    public IActionResult Get()
+    {
+        return Ok(this.repository.GetAll());
+    }
 
-        [HttpGet]
-        public IActionResult Get()
+    [HttpPost]
+    public IActionResult Create([FromBody] User user)
+    {
+        try
         {
-            return Ok(this.repository.GetAll());
+            this.repository.Add(user);
+            return Created();
         }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
-        [HttpPost]
-        public IActionResult Create([FromBody] User user)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, [FromBody] User user)
+    {
+        try
         {
-            try
-            {
-                this.repository.Add(user);
-                return Created();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            this.repository.Update(user);
+            return NoContent();
         }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
-        [HttpPut("{id:int}")]
-        public IActionResult Update(int id, [FromBody] User user)
+    [HttpGet("random")]
+    public IActionResult FailRandomly()
+    {
+        var random = new Random();
+        var fail = random.Next(0, 2) == 1;
+        if (fail)
         {
-            try
-            {
-                this.repository.Update(user);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            throw new Exception("Random failure");
         }
+        return Ok("Success");
+    }
+
+    [HttpGet("fail")]
+    public IActionResult Fail()
+    {
+        throw new NotImplementedException();
     }
 }
