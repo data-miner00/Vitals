@@ -13,13 +13,19 @@ public sealed class UserController : ControllerBase
 {
     private readonly Counter<int> counter;
     private readonly ActivitySource source;
+    private readonly ILogger<UserController> logger;
     private readonly UserRepository repository;
 
-    public UserController(UserRepository repository, Meter greeterMeter, ActivitySource source)
+    public UserController(
+        UserRepository repository,
+        Meter greeterMeter,
+        ActivitySource source,
+        ILogger<UserController> logger)
     {
         this.repository = repository;
         this.counter = greeterMeter.CreateCounter<int>("Counter");
         this.source = source;
+        this.logger = logger;
     }
 
     [HttpGet("{id:int}")]
@@ -81,12 +87,22 @@ public sealed class UserController : ControllerBase
     [HttpGet("random")]
     public IActionResult FailRandomly()
     {
-        var random = new Random();
-        var fail = random.Next(0, 2) == 1;
+        var randomInt = new Random().Next(0, 2);
+
+        using var _ = this.logger.BeginScope(new List<KeyValuePair<string, object>>
+        {
+            new KeyValuePair<string, object>("RandomInt", randomInt),
+        });
+
+        var fail = randomInt == 1;
         if (fail)
         {
+            this.logger.LogError("Random failure was thrown!");
             throw new Exception("Random failure");
         }
+
+        this.logger.LogInformation("Random failure not thrown");
+
         return Ok("Success");
     }
 

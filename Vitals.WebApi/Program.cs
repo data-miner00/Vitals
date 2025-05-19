@@ -2,6 +2,7 @@ namespace Vitals.WebApi;
 
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -21,6 +22,26 @@ public static class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddHealthChecks();
+
+        builder.Logging
+            .ClearProviders()
+            .AddConsole()
+            .AddDebug()
+            .AddOpenTelemetry(opt =>
+            {
+                opt.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(builder.Configuration["OTLP_ENDPOINT_URL"]);
+                });
+
+                var resourceBuilder = ResourceBuilder.CreateDefault()
+                    .AddService(builder.Environment.ApplicationName);
+
+                opt.AddConsoleExporter()
+                    .SetResourceBuilder(resourceBuilder);
+
+                opt.IncludeScopes = true;
+            });
 
         using var greeterMeter = new Meter("Vitals.WebApi", "1.0.0");
         builder.Services.AddSingleton(greeterMeter);
@@ -60,6 +81,9 @@ public static class Program
         // Add Tracing for ASP.NET Core and our custom ActivitySource and export to Jaeger
         otel.WithTracing(tracing =>
         {
+            tracing.AddSource(builder.Environment.ApplicationName)
+                .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                    .AddService(builder.Environment.ApplicationName));
             tracing.AddAspNetCoreInstrumentation();
             tracing.AddHttpClientInstrumentation();
             tracing.AddSource(activitySource.Name);
@@ -69,6 +93,8 @@ public static class Program
                 {
                     otlpOptions.Endpoint = new Uri(otlpEndpoint);
                 });
+
+                tracing.AddJaegerExporter(); // Remove this for OTLP
             }
             else
             {
@@ -82,10 +108,15 @@ public static class Program
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
         app.UseAuthorization();
-
         app.MapControllers();
+        app.MapHealthChecks();
+        app.MapPrometheusScrapingEndpoint();
+        app.Run();
+    }
 
-        app.MapHealthChecks("/health", new HealthCheckOptions
+    private static IEndpointConventionBuilder MapHealthChecks(this WebApplication app)
+    {
+        return app.MapHealthChecks("/health", new HealthCheckOptions
         {
             AllowCachingResponses = false,
             ResultStatusCodes =
@@ -95,9 +126,5 @@ public static class Program
                 [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable,
             },
         });
-
-        app.MapPrometheusScrapingEndpoint();
-
-        app.Run();
     }
 }
