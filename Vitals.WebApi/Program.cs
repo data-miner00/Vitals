@@ -19,7 +19,11 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddSingleton<UserRepository>();
-        builder.Services.AddControllers();
+        builder.Services.AddControllers(opt =>
+        {
+            // Return 406 Not Acceptable if the client requests a format that is not supported
+            opt.ReturnHttpNotAcceptable = true;
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHealthChecks();
@@ -37,12 +41,12 @@ public static class Program
             opt.SubstituteApiVersionInUrl = true;
         });
 
-        builder.Services.AddProblemDetails(options =>
+        builder.Services.AddProblemDetails(opt =>
         {
-            options.CustomizeProblemDetails = (context) =>
+            opt.CustomizeProblemDetails = (ctx) =>
             {
-                context.ProblemDetails.Extensions.Add("additionalInfo", "hello world");
-                context.ProblemDetails.Extensions.Add("server", Environment.MachineName);
+                ctx.ProblemDetails.Extensions.Add("additionalInfo", "hello world");
+                ctx.ProblemDetails.Extensions.Add("server", Environment.MachineName);
             };
         });
 
