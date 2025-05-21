@@ -1,11 +1,9 @@
-namespace Vitals.WebApi.Controllers;
+namespace Vitals.WebApi.Controllers.V1;
 
 using Microsoft.AspNetCore.Mvc;
 using Vitals.WebApi.Models;
 
-[ApiController]
-[Route("api/[controller]")]
-public sealed class WeatherForecastController : ControllerBase
+public sealed class WeatherForecastController : V1Controller
 {
     private static readonly string[] Summaries = new[]
     {

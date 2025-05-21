@@ -1,4 +1,4 @@
-﻿namespace Vitals.WebApi.Controllers;
+﻿namespace Vitals.WebApi.Controllers.V1;
 
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -6,10 +6,8 @@ using System.Diagnostics.Metrics;
 using Vitals.WebApi.Models;
 using Vitals.WebApi.Repositories;
 
-[ApiController]
-[Route("api/[controller]")]
 [Area("users")]
-public sealed class UserController : ControllerBase
+public sealed class UserController : V1Controller
 {
     private readonly Counter<int> counter;
     private readonly ActivitySource source;

@@ -1,5 +1,6 @@
 namespace Vitals.WebApi;
 
+using Asp.Versioning.Conventions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry;
@@ -22,6 +23,19 @@ public static class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHealthChecks();
+        builder.Services.AddApiVersioning(opt =>
+        {
+            opt.AssumeDefaultVersionWhenUnspecified = true;
+            opt.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+            opt.ReportApiVersions = true;
+        }).AddMvc(opt =>
+        {
+            opt.Conventions.Add(new VersionByNamespaceConvention());
+        }).AddApiExplorer(opt =>
+        {
+            opt.GroupNameFormat = "'v'V";
+            opt.SubstituteApiVersionInUrl = true;
+        });
 
         builder.RegisterLoggings();
 
