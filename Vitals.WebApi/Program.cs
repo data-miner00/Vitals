@@ -37,6 +37,15 @@ public static class Program
             opt.SubstituteApiVersionInUrl = true;
         });
 
+        builder.Services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = (context) =>
+            {
+                context.ProblemDetails.Extensions.Add("additionalInfo", "hello world");
+                context.ProblemDetails.Extensions.Add("server", Environment.MachineName);
+            };
+        });
+
         builder.RegisterLoggings();
 
         using var greeterMeter = new Meter("Vitals.WebApi", "1.0.0");
