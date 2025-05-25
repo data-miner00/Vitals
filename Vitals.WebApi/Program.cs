@@ -23,7 +23,7 @@ public static class Program
         {
             // Return 406 Not Acceptable if the client requests a format that is not supported
             opt.ReturnHttpNotAcceptable = true;
-        });
+        }).AddXmlDataContractSerializerFormatters();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHealthChecks();
