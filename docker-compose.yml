@@ -54,10 +54,11 @@ services:
     volumes:
       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     ports:
-      - 8888:8888
-      - 8889:8889
-      - 13133:13133
-      - 4317:4317
+      - 8888:8888    # Prometheus collector metrics
+      - 8889:8889    # Prometheus exporter metrics
+      - 13133:13133  # Health check
+      - 4317:4317    # OTLP gRPC receiver
+      - 9200:55679   # zpages
     networks:
       - monitoring
   node-exporter:
