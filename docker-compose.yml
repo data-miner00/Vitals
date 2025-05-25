@@ -7,6 +7,10 @@ volumes:
   grafana-data:
     driver: local
 
+# secrets:
+#   redis_password:
+#     file: ./redis_password.txt
+
 services:
   app:
     build:
@@ -66,14 +70,5 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-    networks:
-      - monitoring
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.45
-    container_name: jaeger
-    ports:
-      - 16686:16686 # Jaeger UI
-      - 6831:6831/udp
     networks:
       - monitoring
