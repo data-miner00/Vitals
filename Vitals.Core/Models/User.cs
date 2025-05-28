@@ -1,6 +1,7 @@
 ﻿namespace Vitals.Core.Models;
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public class User
 {
@@ -11,6 +12,13 @@ public class User
     public string Email { get; set; }
 
     public string PhoneNumber { get; set; }
+
+    public int CredentialId { get; set; }
+
+    [ForeignKey(nameof(CredentialId))]
+    public Credential Credential { get; set; }
+
+    public List<Post> Posts { get; set; } = [];
 
     public DateTime CreatedAt { get; set; }
 

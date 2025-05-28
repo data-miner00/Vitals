@@ -13,8 +13,8 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="item">The item to be added.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The added Id.</returns>
-    Task<int> AddAsync(T item, CancellationToken cancellationToken);
+    /// <returns>The task.</returns>
+    Task AddAsync(T item, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves all the available data from the database.
