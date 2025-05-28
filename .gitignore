@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Environment secrets
 .env
+
+# Drawio
+.$Vitals.drawio*
