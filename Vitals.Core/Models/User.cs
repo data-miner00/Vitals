@@ -5,6 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class User
 {
+    /// <summary>
+    /// Gets or sets the unique identifier for the user.
+    /// Automatically sets by the database with autoincrement.
+    /// </summary>
     public int Id { get; set; }
 
     public string Username { get; set; }

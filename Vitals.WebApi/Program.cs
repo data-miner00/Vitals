@@ -10,6 +10,10 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Security.Cryptography;
+using Vitals.Core.Models;
+using Vitals.Core.Repositories;
+using Vitals.Integrations;
 using Vitals.WebApi.Repositories;
 
 public static class Program
@@ -17,7 +21,13 @@ public static class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        using var hasher = SHA512.Create();
 
+        var dbContext = new AppDbContext();
+
+        builder.Services.AddSingleton(dbContext);
+        builder.Services.AddSingleton(hasher);
+        builder.Services.AddSingleton<IRepository<User>, Integrations.Repositories.UserRepository>();
         builder.Services.AddSingleton<UserRepository>();
         builder.Services.AddControllers(opt =>
         {
