@@ -9,7 +9,7 @@ using Vitals.Core;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 
-public sealed class UserRepository : IRepository<User>
+public sealed class UserRepository : IUserRepository
 {
     private readonly AppDbContext context;
 
@@ -30,11 +30,29 @@ public sealed class UserRepository : IRepository<User>
         return users;
     }
 
+    public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var user = this.context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+        return user;
+    }
+
     public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         var user = this.context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        return user;
+    }
+
+    public Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
+    {
+        var user = this.context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
 
         return user;
     }

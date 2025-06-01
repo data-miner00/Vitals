@@ -27,7 +27,7 @@ public static class Program
 
         builder.Services.AddSingleton(dbContext);
         builder.Services.AddSingleton(hasher);
-        builder.Services.AddSingleton<IRepository<User>, Integrations.Repositories.UserRepository>();
+        builder.Services.AddSingleton<IUserRepository, Integrations.Repositories.UserRepository>();
         builder.Services.AddSingleton<UserRepository>();
         builder.Services.AddControllers(opt =>
         {
