@@ -1,6 +1,7 @@
 namespace Vitals.WebApi;
 
 using Asp.Versioning.Conventions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry;
@@ -77,6 +78,9 @@ public static class Program
         builder.Services.AddSingleton(activitySource);
 
         otel.AddTracing(builder.Environment.ApplicationName, activitySource.Name, otlpEndpoint);
+
+        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
         var app = builder.Build();
 

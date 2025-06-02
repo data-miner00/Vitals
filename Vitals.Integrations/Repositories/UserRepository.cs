@@ -34,6 +34,7 @@ public sealed class UserRepository : IUserRepository
     {
         var user = this.context.Users
             .AsNoTracking()
+            .Include(x => x.Credential)
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
         return user;
@@ -43,6 +44,7 @@ public sealed class UserRepository : IUserRepository
     {
         var user = this.context.Users
             .AsNoTracking()
+            .Include(x => x.Credential)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         return user;
@@ -52,6 +54,7 @@ public sealed class UserRepository : IUserRepository
     {
         var user = this.context.Users
             .AsNoTracking()
+            .Include(x => x.Credential)
             .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
 
         return user;

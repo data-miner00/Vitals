@@ -7,6 +7,7 @@ using Vitals.Core.Repositories;
 using User = Core.Models.User;
 using System.Security.Cryptography;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 [ApiController]
 [Route("api/auth")]
@@ -54,7 +55,7 @@ public class AuthenticationController : ControllerBase
 
         var user = await this.userRepository.GetByUsernameAsync(request.Username, this.CancellationToken);
 
-        if (user is null || user.Credential.PasswordHash != hashedPassword)
+        if (user is null || user.Credential is null || user.Credential.PasswordHash != hashedPassword)
         {
             return this.Unauthorized();
         }
@@ -67,10 +68,10 @@ public class AuthenticationController : ControllerBase
             new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
         };
 
-        var identity = new ClaimsIdentity(claims);
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
         var principal = new ClaimsPrincipal(identity);
 
-        return this.SignIn(principal);
+        return this.SignIn(principal, CookieAuthenticationDefaults.AuthenticationScheme);
     }
 }
