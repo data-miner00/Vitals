@@ -13,14 +13,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
 		LICENSE.txt = LICENSE.txt
-		otel-collector-config.yml = otel-collector-config.yml
-		prometheus.yml = prometheus.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitals.Core", "Vitals.Core\Vitals.Core.csproj", "{17842ADB-9D27-4061-BB32-D03D2D3CCF98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitals.Integrations", "Vitals.Integrations\Vitals.Integrations.csproj", "{45022784-9446-4A22-BD24-2BA4B43E5FC2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{2ED4F343-96D3-4A32-A98D-8BBF9CD4C73E}"
+	ProjectSection(SolutionItems) = preProject
+		infra\otel-collector\otel-collector-config.yml = infra\otel-collector\otel-collector-config.yml
+		infra\prometheus\prometheus.yml = infra\prometheus\prometheus.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -33,7 +33,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     restart: unless-stopped
     networks:
@@ -57,7 +57,7 @@ services:
     image: otel/opentelemetry-collector:0.95.0
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
-      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+      - ./infra/otel-collector/otel-collector-config.yml:/etc/otel-collector-config.yml
     ports:
       - 8888:8888    # Prometheus collector metrics
       - 8889:8889    # Prometheus exporter metrics
