@@ -1,5 +1,6 @@
 ﻿namespace Vitals.WebApi.Controllers.V1;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -7,6 +8,7 @@ using Vitals.WebApi.Models;
 using Vitals.WebApi.Repositories;
 
 [Area("users")]
+[Authorize]
 public sealed class UserController : V1Controller
 {
     private readonly Counter<int> counter;
