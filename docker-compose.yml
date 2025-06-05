@@ -6,6 +6,8 @@ volumes:
     driver: local
   grafana-data:
     driver: local
+  app-data:
+    driver: local
 
 # secrets:
 #   redis_password:
@@ -14,7 +16,7 @@ volumes:
 services:
   app:
     build:
-      context: ./Vitals.WebApi
+      context: .
       dockerfile: Dockerfile
     ports:
       - 8080:8080
@@ -23,8 +25,11 @@ services:
       - monitoring
     environment:
       OTLP_ENDPOINT_URL: 'http://otel-collector:4317'
+      DB_PATH: '/app/data/app.db'
     depends_on:
       - otel-collector
+    volumes:
+      - app-data:/app/data
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
