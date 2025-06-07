@@ -20,12 +20,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
-    restart: unless-stopped
+    restart: no
     networks:
       - monitoring
     environment:
       OTLP_ENDPOINT_URL: 'http://otel-collector:4317'
-      DB_PATH: '/app/data/app.db'
+      ConnectionStrings__DefaultConnection: "Data Source=/app/data/vitals.db;"
     depends_on:
       - otel-collector
     volumes:

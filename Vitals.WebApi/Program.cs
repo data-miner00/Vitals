@@ -24,10 +24,10 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
         using var hasher = SHA512.Create();
 
-        var dbPath = builder.Configuration["DB_PATH"]
-            ?? throw new InvalidOperationException("DB_PATH is missing.");
+        var dbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Default connection string is missing.");
 
-        var dbContext = new AppDbContext(dbPath);
+        var dbContext = new AppDbContext(dbConnectionString);
 
         builder.Services.AddSingleton(dbContext);
         builder.Services.AddSingleton(hasher);
