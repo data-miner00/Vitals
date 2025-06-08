@@ -3,10 +3,13 @@ receivers:
     protocols:
       grpc:
         endpoint: otel-collector:4317
+      http:
 
 exporters:
   prometheus:
     endpoint: otel-collector:8889
+  otlphttp:
+    endpoint: http://loki:3100/otlp
 
 processors:
   batch:
@@ -22,3 +25,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]

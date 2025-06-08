@@ -8,6 +8,8 @@ volumes:
     driver: local
   app-data:
     driver: local
+  loki-data:
+    driver: local
 
 # secrets:
 #   redis_password:
@@ -81,5 +83,15 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
+    networks:
+      - monitoring
+  loki:
+    image: grafana/loki:3.5.1
+    container_name: loki
+    volumes:
+      - loki-data:/data/loki
+    restart: unless-stopped
+    ports:
+      - 3100:3100
     networks:
       - monitoring

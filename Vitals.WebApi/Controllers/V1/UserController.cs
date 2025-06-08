@@ -35,10 +35,12 @@ public sealed class UserController : V1Controller
         try
         {
             this.counter.Add(1);
+            this.logger.LogInformation("Fetching user with ID {Id}", id);
             return Ok(this.repository.Get(id));
         }
         catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error fetching user with ID {Id}", id);
             return BadRequest(ex.Message);
         }
         finally
@@ -53,6 +55,7 @@ public sealed class UserController : V1Controller
     [HttpGet]
     public IActionResult Get()
     {
+        this.logger.LogInformation("Fetching all users");
         return Ok(this.repository.GetAll());
     }
 
@@ -62,10 +65,12 @@ public sealed class UserController : V1Controller
         try
         {
             this.repository.Add(user);
+            this.logger.LogInformation("User created with ID {Id}", user.Id);
             return Created();
         }
         catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error creating user with Id {Id}", user.Id);
             return BadRequest(ex.Message);
         }
     }
@@ -76,10 +81,12 @@ public sealed class UserController : V1Controller
         try
         {
             this.repository.Update(user);
+            this.logger.LogInformation("User with ID {Id} has been updated", id);
             return NoContent();
         }
         catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error updating user with Id {Id}", id);
             return BadRequest(ex.Message);
         }
     }
