@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 	ProjectSection(SolutionItems) = preProject
 		infra\otel-collector\otel-collector-config.yml = infra\otel-collector\otel-collector-config.yml
 		infra\prometheus\prometheus.yml = infra\prometheus\prometheus.yml
+		infra\tempo\tempo.yml = infra\tempo\tempo.yml
 	EndProjectSection
 EndProject
 Global
