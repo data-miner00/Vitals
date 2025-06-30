@@ -15,7 +15,9 @@ using System.Security.Cryptography;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 using Vitals.Integrations;
+using Vitals.WebApi.Options;
 using Vitals.WebApi.Repositories;
+using Vitals.WebApi.Services;
 
 public static class Program
 {
@@ -85,12 +87,21 @@ public static class Program
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
+        var logOption = builder.Configuration.GetSection(LogBackgroundServiceOption.SectionName).Get<LogBackgroundServiceOption>()
+            ?? throw new InvalidOperationException("LogBackgroundServiceOption is not configured.");
+
+        builder.Services.AddSingleton(logOption);
+
+        builder.Services.AddHostedService<LogBackgroundService>();
+
         var app = builder.Build();
 
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
+        app.UseAuthentication();
         app.UseAuthorization();
+        app.UseStatusCodePages();
         app.MapControllers();
         app.MapHealthChecks();
         app.MapPrometheusScrapingEndpoint();
