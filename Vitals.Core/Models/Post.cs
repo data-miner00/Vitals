@@ -15,9 +15,6 @@ public class Post
     [ForeignKey(nameof(UserId))]
     public User User { get; set; }
 
-    public int VoteId { get; set; }
-
-    [ForeignKey(nameof(VoteId))]
     public Vote Vote { get; set; }
 
     public DateTime CreatedAt { get; set; }
