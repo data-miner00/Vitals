@@ -9,7 +9,7 @@ using Vitals.Core;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 
-public sealed class PostRepository : IRepository<Post>
+public sealed class PostRepository : IPostRepository
 {
     private readonly AppDbContext context;
 

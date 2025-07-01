@@ -9,7 +9,7 @@ using Vitals.Core;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 
-public sealed class VoteRepository : IRepository<Vote>
+public sealed class VoteRepository : IVoteRepository
 {
     private readonly AppDbContext context;
 

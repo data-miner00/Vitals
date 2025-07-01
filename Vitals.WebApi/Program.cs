@@ -35,6 +35,7 @@ public static class Program
         builder.Services.AddSingleton(hasher);
         builder.Services.AddSingleton<IUserRepository, Integrations.Repositories.UserRepository>();
         builder.Services.AddSingleton<UserRepository>();
+        builder.Services.AddSingleton<IPostRepository, Integrations.Repositories.PostRepository>();
         builder.Services.AddControllers(opt =>
         {
             // Return 406 Not Acceptable if the client requests a format that is not supported
