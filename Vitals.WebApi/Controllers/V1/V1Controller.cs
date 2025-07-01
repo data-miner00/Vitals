@@ -8,4 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 public abstract class V1Controller : ControllerBase
 {
+    /// <summary>
+    /// Gets the cancellation token of the current HTTP request.
+    /// </summary>
+    public CancellationToken CancellationToken => this.HttpContext.RequestAborted;
 }

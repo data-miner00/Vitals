@@ -38,6 +38,15 @@ public sealed class VoteRepository : IVoteRepository
         return vote;
     }
 
+    public async Task<Vote?> GetByPostId(int postId, CancellationToken cancellationToken)
+    {
+        var vote = await this.context.Votes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.PostId == postId, cancellationToken);
+
+        return vote;
+    }
+
     public async Task RemoveAsync(int id, CancellationToken cancellationToken)
     {
         var vote = await this.context.Votes
