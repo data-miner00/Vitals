@@ -9,12 +9,15 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using RabbitMQ.Client;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
+using Vitals.Core.Clients;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 using Vitals.Integrations;
+using Vitals.Integrations.Clients;
 using Vitals.WebApi.Options;
 using Vitals.WebApi.Repositories;
 using Vitals.WebApi.Services;
@@ -95,6 +98,8 @@ public static class Program
         builder.Services.AddSingleton(logOption);
 
         builder.Services.AddHostedService<LogBackgroundService>();
+
+        builder.AddRabbitMQ();
 
         var app = builder.Build();
 
@@ -210,5 +215,44 @@ public static class Program
         });
 
         return otel;
+    }
+    
+    private static WebApplicationBuilder AddRabbitMQ(this WebApplicationBuilder builder)
+    {
+        var messagingOption = builder.Configuration
+            .GetSection(MessagingOption.SectionName)
+            .Get<MessagingOption>()
+            ?? throw new InvalidOperationException("MessagingOption not set.");
+
+        var emailOption = builder.Configuration
+            .GetSection(EmailOption.SectionName)
+            .Get<EmailOption>()
+            ?? throw new InvalidOperationException("EmailOption not set.");
+
+        builder.Services.AddSingleton(emailOption);
+
+        var factory = new ConnectionFactory
+        {
+            HostName = messagingOption.HostName,
+            Port = messagingOption.Port,
+        };
+        var connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        var channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
+
+        channel
+            .QueueDeclareAsync(
+                queue: emailOption.QueueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null)
+            .GetAwaiter()
+            .GetResult();
+
+        var rmqEventPublisher = new RmqEventPublisher(channel, emailOption.QueueName);
+
+        builder.Services.AddSingleton<IEventPublisher>(rmqEventPublisher);
+
+        return builder;
     }
 }

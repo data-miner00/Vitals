@@ -4,8 +4,11 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Vitals.Core.Clients;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
+using Vitals.WebApi.Events;
+using Vitals.WebApi.Options;
 
 [Authorize]
 [ApiVersion("1.0")]
@@ -15,11 +18,22 @@ public class VoteController : ControllerBase
 {
     private readonly IVoteRepository voteRepository;
     private readonly IPostRepository postRepository;
+    private readonly IEventPublisher eventPublisher;
+    private readonly IUserRepository userRepository;
+    private readonly EmailOption emailOption;
 
-    public VoteController(IVoteRepository voteRepository, IPostRepository postRepository)
+    public VoteController(
+        IVoteRepository voteRepository,
+        IPostRepository postRepository,
+        IEventPublisher eventPublisher,
+        IUserRepository userRepository,
+        EmailOption emailOption)
     {
         this.voteRepository = voteRepository;
         this.postRepository = postRepository;
+        this.eventPublisher = eventPublisher;
+        this.userRepository = userRepository;
+        this.emailOption = emailOption;
     }
 
     private CancellationToken CancellationToken => this.HttpContext.RequestAborted;
@@ -82,7 +96,18 @@ public class VoteController : ControllerBase
             await this.voteRepository.UpdateAsync(vote, this.CancellationToken);
         }
 
-        return this.Ok();
+        var user = await this.userRepository.GetByIdAsync(userId, this.CancellationToken);
+        var emailEvent = new EmailEvent
+        {
+            Sender = emailOption.Sender,
+            Receiver = user!.Email,
+            Subject = "Your post has been upvoted!",
+            Body = $"Your post with ID {postId} has been upvoted by user {parsedUserId}.",
+        };
+
+        await this.eventPublisher.PublishAsync(emailEvent, this.CancellationToken);
+
+        return this.NoContent();
     }
 
     [HttpPatch("downvote")]
@@ -130,7 +155,17 @@ public class VoteController : ControllerBase
             await this.voteRepository.UpdateAsync(vote, this.CancellationToken);
         }
 
-        return this.Ok();
-    }
+        var user = await this.userRepository.GetByIdAsync(userId, this.CancellationToken);
+        var emailEvent = new EmailEvent
+        {
+            Sender = emailOption.Sender,
+            Receiver = user!.Email,
+            Subject = "Your post has been downvoted!",
+            Body = $"Your post with ID {postId} has been downvoted by user {parsedUserId}.",
+        };
 
+        await this.eventPublisher.PublishAsync(emailEvent, this.CancellationToken);
+
+        return this.NoContent();
+    }
 }
