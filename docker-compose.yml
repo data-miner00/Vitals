@@ -12,6 +12,10 @@ volumes:
     driver: local
   tempo-data:
     driver: local
+  rabbitmq-lib:
+    driver: local
+  rabbitmq-log:
+    driver: local
 
 # secrets:
 #   redis_password:
@@ -30,6 +34,9 @@ services:
     environment:
       OTLP_ENDPOINT_URL: 'http://otel-collector:4317'
       ConnectionStrings__DefaultConnection: "Data Source=/app/data/vitals.db;"
+      Messaging__HostName: "rabbitmq"
+      Messaging__UserName: ${RABBITMQ_DEFAULT_USER}
+      Messaging__Password: ${RABBITMQ_DEFAULT_PASS}
     depends_on:
       - otel-collector
     volumes:
@@ -112,3 +119,29 @@ services:
       - otel-collector
     networks:
       - monitoring
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - 5673:5672
+      - 15673:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    configs:
+      - source: rabbitmq-plugins
+        target: /etc/rabbitmq/enabled_plugins
+    volumes:
+      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq
+    networks:
+      - monitoring
+
+configs:
+  rabbitmq-plugins:
+    content: |
+      [
+        rabbitmq_management,
+        rabbitmq_prometheus
+      ].

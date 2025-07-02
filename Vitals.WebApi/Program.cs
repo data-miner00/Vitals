@@ -235,6 +235,8 @@ public static class Program
         {
             HostName = messagingOption.HostName,
             Port = messagingOption.Port,
+            UserName = messagingOption.UserName,
+            Password = messagingOption.Password,
         };
         var connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
         var channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
