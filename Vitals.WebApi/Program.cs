@@ -103,6 +103,7 @@ public static class Program
 
         var app = builder.Build();
 
+        app.UseRabbitMQConsumer();
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
@@ -251,10 +252,21 @@ public static class Program
             .GetAwaiter()
             .GetResult();
 
+        var rmqEventListener = new RmqEventListener(channel, emailOption.QueueName);
+
+        builder.Services.AddSingleton(rmqEventListener);
+
         var rmqEventPublisher = new RmqEventPublisher(channel, emailOption.QueueName);
 
         builder.Services.AddSingleton<IEventPublisher>(rmqEventPublisher);
 
         return builder;
+    }
+
+    private static WebApplication UseRabbitMQConsumer(this WebApplication app)
+    {
+        _ = app.Services.GetRequiredService<RmqEventListener>();
+        return app;
+
     }
 }

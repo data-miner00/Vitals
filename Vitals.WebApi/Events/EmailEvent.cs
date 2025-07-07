@@ -10,6 +10,7 @@ public class EmailEvent
     [EmailAddress]
     public string Sender { get; set; }
 
+    [RegularExpression(@"^[A-Z]_[0-9]$")]
     public string Subject { get; set; }
 
     public string Body { get; set; }
