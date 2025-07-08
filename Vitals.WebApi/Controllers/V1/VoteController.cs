@@ -16,6 +16,7 @@ using Vitals.WebApi.Options;
 [ApiController]
 public class VoteController : ControllerBase
 {
+    private readonly ILogger<VoteController> logger;
     private readonly IVoteRepository voteRepository;
     private readonly IPostRepository postRepository;
     private readonly IEventPublisher eventPublisher;
@@ -23,12 +24,14 @@ public class VoteController : ControllerBase
     private readonly EmailOption emailOption;
 
     public VoteController(
+        ILogger<VoteController> logger,
         IVoteRepository voteRepository,
         IPostRepository postRepository,
         IEventPublisher eventPublisher,
         IUserRepository userRepository,
         EmailOption emailOption)
     {
+        this.logger = logger;
         this.voteRepository = voteRepository;
         this.postRepository = postRepository;
         this.eventPublisher = eventPublisher;
@@ -107,6 +110,8 @@ public class VoteController : ControllerBase
 
         await this.eventPublisher.PublishAsync(emailEvent, this.CancellationToken);
 
+        this.logger.LogDebug("Upvote done");
+
         return this.NoContent();
     }
 
@@ -165,6 +170,8 @@ public class VoteController : ControllerBase
         };
 
         await this.eventPublisher.PublishAsync(emailEvent, this.CancellationToken);
+
+        this.logger.LogDebug("Downvote done");
 
         return this.NoContent();
     }
