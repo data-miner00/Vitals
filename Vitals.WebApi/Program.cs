@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 using Vitals.Core.Clients;
-using Vitals.Core.Models;
 using Vitals.Core.Repositories;
 using Vitals.Integrations;
 using Vitals.Integrations.Clients;
@@ -32,7 +31,7 @@ public static class Program
         var dbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Default connection string is missing.");
 
-        var dbContext = new AppDbContext(dbConnectionString);
+        using var dbContext = new AppDbContext(dbConnectionString);
 
         builder.Services.AddSingleton(dbContext);
         builder.Services.AddSingleton(hasher);
@@ -103,7 +102,6 @@ public static class Program
 
         var app = builder.Build();
 
-        app.UseRabbitMQConsumer();
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
@@ -261,12 +259,5 @@ public static class Program
         builder.Services.AddSingleton<IEventPublisher>(rmqEventPublisher);
 
         return builder;
-    }
-
-    private static WebApplication UseRabbitMQConsumer(this WebApplication app)
-    {
-        _ = app.Services.GetRequiredService<RmqEventListener>();
-        return app;
-
     }
 }
