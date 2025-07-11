@@ -97,6 +97,7 @@ public static class Program
         builder.Services.AddSingleton(logOption);
 
         builder.Services.AddHostedService<LogBackgroundService>();
+        builder.Services.AddHostedService<MessageListenerService>();
 
         builder.AddRabbitMQ();
 
@@ -250,9 +251,13 @@ public static class Program
             .GetAwaiter()
             .GetResult();
 
-        var rmqEventListener = new RmqEventListener(channel, emailOption.QueueName);
+        builder.Services.AddSingleton(ctx =>
+        {
+            var logger = ctx.GetRequiredService<ILogger<RmqEventListener>>();
+            var rmqEventListener = new RmqEventListener(logger, channel, emailOption.QueueName);
 
-        builder.Services.AddSingleton(rmqEventListener);
+            return rmqEventListener;
+        });
 
         var rmqEventPublisher = new RmqEventPublisher(channel, emailOption.QueueName);
 
