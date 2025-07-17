@@ -1,16 +1,20 @@
 namespace Vitals.WebApi.Controllers.V1;
 
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vitals.WebApi.Models;
 
 [Authorize]
-public sealed class WeatherForecastController : V1Controller
+[ApiController]
+[ApiVersion("1.0", Deprecated = false)]
+[Route("api/v{version:apiVersion}/[controller]")]
+public sealed class WeatherForecastController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
-    {
+    private static readonly string[] Summaries =
+    [
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+    ];
 
     private readonly ILogger<WeatherForecastController> logger;
 

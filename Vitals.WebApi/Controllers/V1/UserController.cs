@@ -1,5 +1,6 @@
 ﻿namespace Vitals.WebApi.Controllers.V1;
 
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -9,7 +10,10 @@ using Vitals.WebApi.Repositories;
 
 [Area("users")]
 [Authorize]
-public sealed class UserController : V1Controller
+[ApiController]
+[ApiVersion("1.0", Deprecated = false)]
+[Route("api/v{version:apiVersion}/[controller]")]
+public sealed class UserController : ControllerBase
 {
     private readonly Counter<int> counter;
     private readonly ActivitySource source;
