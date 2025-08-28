@@ -3,14 +3,15 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using Vitals.Core;
 using Vitals.Core.Models;
 using Vitals.Core.Repositories;
+using Vitals.WebApi.Attributes;
 using Vitals.WebApi.Models;
 
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/User/{userId:int}/[controller]")]
+[Route("api/v{version:apiVersion}/")]
 [ApiController]
 public sealed class PostController : ControllerBase
 {
@@ -19,23 +20,24 @@ public sealed class PostController : ControllerBase
 
     public PostController(IUserRepository userRepository, IPostRepository postRepository)
     {
-        this.userRepository = userRepository;
-        this.postRepository = postRepository;
+        this.userRepository = Guard.ThrowIfNull(userRepository);
+        this.postRepository = Guard.ThrowIfNull(postRepository);
     }
 
     private CancellationToken CancellationToken => this.HttpContext.RequestAborted;
 
-    [HttpPost]
-    public async Task<IActionResult> CreateAsync([FromBody] CreatePostRequest request)
+    [HttpGet("[controller]")]
+    public async Task<IActionResult> GetAllAsync()
     {
-        var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var posts = await this.postRepository.GetAllAsync(this.CancellationToken);
+        return this.Ok(posts);
+    }
 
-        if (!int.TryParse(userId, out var parsedUserId))
-        {
-            return this.Unauthorized("Invalid user ID.");
-        }
-
-        var user = await this.userRepository.GetByIdAsync(parsedUserId, this.CancellationToken);
+    [UserAuthorize]
+    [HttpPost("User/{userId:int}/[controller]")]
+    public async Task<IActionResult> CreateAsync(int userId, [FromBody] CreatePostRequest request)
+    {
+        var user = await this.userRepository.GetByIdAsync(userId, this.CancellationToken);
 
         if (user is null)
         {
@@ -56,7 +58,8 @@ public sealed class PostController : ControllerBase
         return this.Created();
     }
 
-    [HttpGet("{id:int}")]
+    [UserAuthorize]
+    [HttpGet("User/{userId:int}/[controller]/{id:int}")]
     public async Task<IActionResult> GetByIdAsync(int userId, int id)
     {
         var post = await this.postRepository.GetByIdAsync(id, this.CancellationToken);
@@ -73,14 +76,16 @@ public sealed class PostController : ControllerBase
         return this.Ok(post);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAllAsync()
+    [UserAuthorize]
+    [HttpGet("User/{userId:int}/[controller]")]
+    public async Task<IActionResult> GetAllByUserAsync(int userId)
     {
         var posts = await this.postRepository.GetAllAsync(this.CancellationToken);
-        return this.Ok(posts);
+        return this.Ok(posts.Where(x => x.UserId == userId).ToList());
     }
 
-    [HttpPut("{id:int}")]
+    [UserAuthorize]
+    [HttpPut("User/{userId:int}/[controller]/{id:int}")]
     public async Task<IActionResult> UpdateAsync(int userId, int id, [FromBody] CreatePostRequest request)
     {
         var post = await this.postRepository.GetByIdAsync(id, this.CancellationToken);
@@ -101,7 +106,8 @@ public sealed class PostController : ControllerBase
         return this.NoContent();
     }
 
-    [HttpDelete("{id:int}")]
+    [UserAuthorize]
+    [HttpDelete("User/{userId:int}/[controller]/{id:int}")]
     public async Task<IActionResult> DeleteAsync(int userId, int id)
     {
         try
