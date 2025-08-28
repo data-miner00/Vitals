@@ -39,6 +39,7 @@ services:
       Messaging__Password: ${RABBITMQ_DEFAULT_PASS}
     depends_on:
       - otel-collector
+      - rabbitmq
     volumes:
       - app-data:/app/data
   prometheus:
